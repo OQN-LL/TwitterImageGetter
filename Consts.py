@@ -1,0 +1,6 @@
+CK = "CONSUMER_KEY"
+CS = "CONSUMER_SECRET"
+AT = "ACCESS_TOKEN"
+ATS = "ACCESS_TOKEN_SECRET"
+
+configFile = "TwitterToken.ini"
