@@ -8,8 +8,11 @@ import sys
 import urllib
 import Consts
 
-counter = 0
-root = "./images/"
+counter_image = 0
+counter_video = 0
+root_image = "./images/"
+root_video = "./videos/"
+page_size = 200
 
 cfg = ConfigParser()
 cfg.read(Consts.configFile)
@@ -35,7 +38,7 @@ def get_favorite_tweets(page,screen_name):
     params = {
         "screen_name" : screen_name,
         "page" : page,
-        "count" : 200,
+        "count" : page_size,
         "include_entities" : 1
     }
     oath = craete_oath_session()
@@ -47,29 +50,42 @@ def get_favorite_tweets(page,screen_name):
     return json.loads(res.text)
 
 def save_image(tweets):
-    global counter
+    global counter_image
+    global counter_video
     for tw in tweets:
         try:
-            images = tw["extended_entities"]["media"]#画像のパスの取得
-            save_path = root + tw["user"]["screen_name"]#ツイート主のscreen_nameを取得
-            os.makedirs(save_path,exist_ok=True)#ツイート主用のディレクトリがなければ作成
+            media = tw["extended_entities"]["media"]#画像・動画オブジェクトの取得
+            for media_path in media:
+                if media_path["type"] == "photo":#画像の時
+                    save_path = root_image + tw["user"]["screen_name"]
+                    os.makedirs(save_path,exist_ok=True)#ツイート主用のディレクトリがなければ作成
+                    url = media_path["media_url"]
+                    url_large = url + ":large"
+                    save_file_path = save_path + "/" + os.path.basename(url)
+                    with open(save_file_path,"wb") as f:
+                        img = urllib.request.urlopen(url_large,timeout=20).read()
+                        #f.write(img)
+                        counter_image += 1
+                    print("saved image [{num: 4d}] : {url}".format(num=counter_image,url=save_file_path))
 
-            for img_path in images:
-                url = img_path["media_url"]
-                url_large = url + ":large"
-                save_file_path = save_path + "/" + os.path.basename(url)
-                with open(save_file_path,"wb") as f:
-                    img = urllib.request.urlopen(url_large,timeout=20).read()
-                    f.write(img)
-                    counter += 1
-                    print("saved [{num: 4d}] : {url}".format(num=counter,url=save_file_path))
+                elif media_path["type"] == "video":#動画の時
+                    save_path = root_video + tw["user"]["screen_name"]
+                    os.makedirs(save_path,exist_ok=True)#ツイート主用のディレクトリがなければ作成
+                    #動画の中でbitrateが最大のmp4動画のurlを得る
+                    url = max([i for i in media_path["video_info"]["variants"] if i["content_type"] == "video/mp4"],key=lambda e:e["bitrate"])["url"]
+                    save_file_path = (save_path + "/" + os.path.basename(url)).split("?")[0]
+                    with open(save_file_path,"wb") as f:
+                        vdo = urllib.request.urlopen(url,timeout=180).read()
+                        f.write(vdo)
+                        counter_video += 1
+                    print("saved video [{num: 4d}] ; {url}".format(num=counter_video,url=save_file_path))
 
-        except KeyError:
+        except (KeyError,ValueError):
             pass
 
 
 if __name__ == "__main__":
-
     for i in range(1,20):
         save_image(get_favorite_tweets(i,screen_name))
-    print("saved {num} images".format(num=counter))
+    print("saved {num} images".format(num=counter_image))
+    print("saved {num} videos".format(num=counter_video))
