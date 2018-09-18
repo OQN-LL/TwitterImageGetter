@@ -67,7 +67,7 @@ def save_image(tweets):
                         break
                     with open(save_file_path,"wb") as f:
                         img = urllib.request.urlopen(url_large,timeout=20).read()
-                        #f.write(img)
+                        f.write(img)
                         counter_image += 1
                     print("saved image [{num: 4d}] : {url}".format(num=counter_image,url=save_file_path))
 
