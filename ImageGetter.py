@@ -62,6 +62,9 @@ def save_image(tweets):
                     url = media_path["media_url"]
                     url_large = url + ":large"
                     save_file_path = save_path + "/" + os.path.basename(url)
+                    if os.path.exists(save_file_path):
+                        print("skip image : {url}".format(url=save_file_path))
+                        break
                     with open(save_file_path,"wb") as f:
                         img = urllib.request.urlopen(url_large,timeout=20).read()
                         #f.write(img)
@@ -74,6 +77,9 @@ def save_image(tweets):
                     #動画の中でbitrateが最大のmp4動画のurlを得る
                     url = max([i for i in media_path["video_info"]["variants"] if i["content_type"] == "video/mp4"],key=lambda e:e["bitrate"])["url"]
                     save_file_path = (save_path + "/" + os.path.basename(url)).split("?")[0]
+                    if os.path.exists(save_file_path):
+                        print("skip video {url}".format(url=save_file_path))
+                        break
                     with open(save_file_path,"wb") as f:
                         vdo = urllib.request.urlopen(url,timeout=180).read()
                         f.write(vdo)
@@ -84,8 +90,11 @@ def save_image(tweets):
             pass
 
 
-if __name__ == "__main__":
-    for i in range(1,20):
-        save_image(get_favorite_tweets(i,screen_name))
+def get_medias(end):
+    for i in range(0,end):
+        save_image(get_favorite_tweets(i+1,screen_name))
     print("saved {num} images".format(num=counter_image))
     print("saved {num} videos".format(num=counter_video))
+
+if __name__ == "__main__":
+    get_medias(20)
