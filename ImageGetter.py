@@ -10,8 +10,8 @@ import Consts
 
 counter_image = 0
 counter_video = 0
-root_image = "./images/"
-root_video = "./videos/"
+root_image = "images/"
+root_video = "videos/"
 page_size = 200
 
 cfg = ConfigParser()
@@ -49,15 +49,15 @@ def get_favorite_tweets(page,screen_name):
         return None
     return json.loads(res.text)
 
-def save_image(tweets):
-    global counter_image
-    global counter_video
-    for tw in tweets:
+def save_media(save_account,tweets):
+    global counter_image #保存した画像の数
+    global counter_video #保存した動画の数
+    for tw in tweets: #全ツイートを処理
         try:
             media = tw["extended_entities"]["media"]#画像・動画オブジェクトの取得
             for media_path in media:
                 if media_path["type"] == "photo":#画像の時
-                    save_path = root_image + tw["user"]["screen_name"]
+                    save_path = "./" + save_account + "/" + root_image + tw["user"]["screen_name"]
                     os.makedirs(save_path,exist_ok=True)#ツイート主用のディレクトリがなければ作成
                     url = media_path["media_url"]
                     url_large = url + ":large"
@@ -72,11 +72,11 @@ def save_image(tweets):
                     print("saved image [{num: 4d}] : {url}".format(num=counter_image,url=save_file_path))
 
                 elif media_path["type"] == "video":#動画の時
-                    save_path = root_video + tw["user"]["screen_name"]
+                    save_path = "./" + save_account + "/" + root_video + tw["user"]["screen_name"]
                     os.makedirs(save_path,exist_ok=True)#ツイート主用のディレクトリがなければ作成
                     #動画の中でbitrateが最大のmp4動画のurlを得る
                     url = max([i for i in media_path["video_info"]["variants"] if i["content_type"] == "video/mp4"],key=lambda e:e["bitrate"])["url"]
-                    save_file_path = (save_path + "/" + os.path.basename(url)).split("?")[0]
+                    save_file_path = (save_path + "/" + os.path.basename(url)).split("?")[0] #保存URLの生成 パラメータ削除
                     if os.path.exists(save_file_path):
                         print("skip video {url}".format(url=save_file_path))
                         break
@@ -84,15 +84,20 @@ def save_image(tweets):
                         vdo = urllib.request.urlopen(url,timeout=180).read()
                         f.write(vdo)
                         counter_video += 1
-                    print("saved video [{num: 4d}] ; {url}".format(num=counter_video,url=save_file_path))
+                    print("saved video [{num: 4d}] : {url}".format(num=counter_video,url=save_file_path))
 
         except (KeyError,ValueError):
             pass
 
+        except urllib.error.HTTPError:
+            with open("Error.txt","a") as f:
+                f.write("HTTP error : " + url)
+
 
 def get_medias(end):
     for i in range(0,end):
-        save_image(get_favorite_tweets(i+1,screen_name))
+        for j in screen_name.split(","):
+            save_media(j,get_favorite_tweets(i+1,j))
     print("saved {num} images".format(num=counter_image))
     print("saved {num} videos".format(num=counter_video))
 
