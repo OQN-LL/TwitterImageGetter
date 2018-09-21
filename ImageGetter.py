@@ -78,7 +78,7 @@ def save_media(save_account,tweets):
                     url = max([i for i in media_path["video_info"]["variants"] if i["content_type"] == "video/mp4"],key=lambda e:e["bitrate"])["url"]
                     save_file_path = (save_path + "/" + os.path.basename(url)).split("?")[0] #保存URLの生成 パラメータ削除
                     if os.path.exists(save_file_path):
-                        print("skip video {url}".format(url=save_file_path))
+                        print("skip video : {url}".format(url=save_file_path))
                         break
                     with open(save_file_path,"wb") as f:
                         vdo = urllib.request.urlopen(url,timeout=180).read()
