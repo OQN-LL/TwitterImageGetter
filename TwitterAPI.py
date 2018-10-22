@@ -33,6 +33,29 @@ def craete_oath_session():
         token[Consts.ATS]
     )
 
+"""
+ユーザーのtweetリストをとってくる
+"""
+def get_user_timeline(page,screen_name):
+    url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+    params = {
+        "screen_name" : screen_name,
+        "page" : page,
+        "count" : pagesize,
+        "include_entities" : 1
+    }
+    oath = craete_oath_session()
+    res = oath.get(url,params = params)
+
+    if res.status_code != 200:
+        print("Error : {0}".format(res.status_code))
+        return None
+    return json.loads(res.text)
+
+
+"""
+ユーザーのfav画像をとってくる
+"""
 def get_favorite_tweets(page,screen_name):
     url = "https://api.twitter.com/1.1/favorites/list.json?"
     params = {
@@ -49,6 +72,12 @@ def get_favorite_tweets(page,screen_name):
         return None
     return json.loads(res.text)
 
+
+
+"""
+Twitterのtweetリストから画像と動画を保存する
+すでにあるものは無視
+"""
 def save_media(save_account,tweets):
     global counter_image #保存した画像の数
     global counter_video #保存した動画の数
@@ -94,12 +123,13 @@ def save_media(save_account,tweets):
                 f.write("HTTP error : " + url)
 
 
+"""
+指定のユーザーのfavTweetをとってきて
+メディアを保存するメソッドに投げる
+"""
 def get_medias(end):
     for i in range(0,end):
         for j in screen_name.split(","):
             save_media(j,get_favorite_tweets(i+1,j))
     print("saved {num} images".format(num=counter_image))
     print("saved {num} videos".format(num=counter_video))
-
-if __name__ == "__main__":
-    get_medias(20)
