@@ -41,7 +41,7 @@ def get_user_timeline(page,screen_name):
     params = {
         "screen_name" : screen_name,
         "page" : page,
-        "count" : pagesize,
+        "count" : page_size,
         "include_entities" : 1
     }
     oath = craete_oath_session()
