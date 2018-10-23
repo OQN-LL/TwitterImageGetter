@@ -34,6 +34,23 @@ def craete_oath_session():
     )
 
 """
+ユーザーidからツイートをとってくる
+"""
+def get_tweet(id):
+    url = "https://api.twitter.com/1.1/statuses/show.json"
+    params = {
+        "id" : id,
+        "include_entities" : 1,
+        "tweet_mode" : "extended"
+    }
+    oath = craete_oath_session()
+    res = oath.get(url,params = params)
+    if res.status_code != 200:
+        print("Error : {0}".format(res.status_code))
+        return None
+    return json.loads(res.text)
+
+"""
 ユーザーのtweetリストをとってくる
 """
 def get_user_timeline(page,screen_name):
@@ -42,7 +59,8 @@ def get_user_timeline(page,screen_name):
         "screen_name" : screen_name,
         "page" : page,
         "count" : page_size,
-        "include_entities" : 1
+        "include_entities" : 1,
+        "tweet_mode" : "extended"
     }
     oath = craete_oath_session()
     res = oath.get(url,params = params)
@@ -62,7 +80,8 @@ def get_favorite_tweets(page,screen_name):
         "screen_name" : screen_name,
         "page" : page,
         "count" : page_size,
-        "include_entities" : 1
+        "include_entities" : 1,
+        "tweet_mode" : "extended"
     }
     oath = craete_oath_session()
     res = oath.get(url,params = params)

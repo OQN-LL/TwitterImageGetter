@@ -13,8 +13,7 @@ if __name__=="__main__":
     for i in range(20):
         for tw in TwitterAPI.get_user_timeline(i+1,argv[1]):
             try:
-                media = tw["extended_entities"]["media"]#["video_info"]
-                if not "RT" in tw["text"]:
-                    print(json.dumps(tw,indent=2,ensure_ascii=False))
+                #media = tw["extended_entities"]["media"]#["video_info"]
+                print(json.dumps(tw,indent=2,ensure_ascii=False))
             except:
                 pass
