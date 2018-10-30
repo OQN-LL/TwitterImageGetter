@@ -2,11 +2,13 @@
 
 from requests_oauthlib import OAuth1Session
 from configparser import ConfigParser
+from time import sleep
 import json
 import os
 import sys
 import urllib
 import Consts
+
 
 counter_image = 0
 counter_video = 0
@@ -34,6 +36,18 @@ def craete_oath_session():
     )
 
 """
+Tweetをとってくるメソッドの
+"""
+def get_tweets(url,params):
+    sleep(1)
+    oath = craete_oath_session()
+    res = oath.get(url,params = params)
+    if res.status_code != 200:
+        print("Error : {0}".format(res.status_code))
+        return None
+    return json.loads(res.text)
+
+"""
 ユーザーidからツイートをとってくる
 """
 def get_tweet(id):
@@ -43,12 +57,7 @@ def get_tweet(id):
         "include_entities" : 1,
         "tweet_mode" : "extended"
     }
-    oath = craete_oath_session()
-    res = oath.get(url,params = params)
-    if res.status_code != 200:
-        print("Error : {0}".format(res.status_code))
-        return None
-    return json.loads(res.text)
+    return get_tweets(url,params)
 
 """
 ユーザーのtweetリストをとってくる
@@ -62,13 +71,7 @@ def get_user_timeline(page,screen_name):
         "include_entities" : 1,
         "tweet_mode" : "extended"
     }
-    oath = craete_oath_session()
-    res = oath.get(url,params = params)
-
-    if res.status_code != 200:
-        print("Error : {0}".format(res.status_code))
-        return None
-    return json.loads(res.text)
+    return get_tweets(url,params)
 
 
 """
@@ -83,13 +86,7 @@ def get_favorite_tweets(page,screen_name):
         "include_entities" : 1,
         "tweet_mode" : "extended"
     }
-    oath = craete_oath_session()
-    res = oath.get(url,params = params)
-
-    if res.status_code != 200:
-        print("Error : {0}".format(res.status_code))
-        return None
-    return json.loads(res.text)
+    return get_tweets(url,params)
 
 
 
@@ -119,7 +116,7 @@ def save_media(save_account,tweets):
                         counter_image += 1
                     print("saved image [{num: 4d}] : {url}".format(num=counter_image,url=save_file_path))
 
-                elif media_path["type"] == "video":#動画の時
+                elif media_path["type"] == "video" or media_path["type"] == "animated_gif":#動画の時
                     save_path = "./" + save_account + "/" + root_video + tw["user"]["screen_name"]
                     os.makedirs(save_path,exist_ok=True)#ツイート主用のディレクトリがなければ作成
                     #動画の中でbitrateが最大のmp4動画のurlを得る
@@ -134,7 +131,7 @@ def save_media(save_account,tweets):
                         counter_video += 1
                     print("saved video [{num: 4d}] : {url}".format(num=counter_video,url=save_file_path))
 
-        except (KeyError,ValueError):
+        except (KeyError,ValueError)as e:
             pass
 
         except urllib.error.HTTPError:
