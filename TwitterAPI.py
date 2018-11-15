@@ -35,10 +35,11 @@ def craete_oath_session():
         token[Consts.ATS]
     )
 
+
 """
 Tweetをとってくるメソッドの
 """
-def get_tweets(url,params):
+def access_api(url,params):
     sleep(1)
     oath = craete_oath_session()
     res = oath.get(url,params = params)
@@ -46,6 +47,34 @@ def get_tweets(url,params):
         print("Error : {0}".format(res.status_code))
         return None
     return json.loads(res.text)
+
+"""
+ブロックしているユーザーのリストをとってくる
+"""
+def get_block_list(skip_status=True,cursor=-1):
+    url = "https://api.twitter.com/1.1/blocks/ids.json"
+    params = {
+        "skip_status" : skip_status,
+        "cursor" : cursor
+    }
+    oath = craete_oath_session()
+    res = oath.get(url,params=params)
+    if res.status_code != 200:
+        print("Error : {0}".format(res.status_code))
+        return None
+    return json.loads(res.text)
+
+
+"""
+ユーザーの情報をとってくる
+"""
+def get_user_info(id,include_entities=False):
+    url="https://api.twitter.com/1.1/users/show.json"
+    params = {
+        "user_id" : id,
+        "include_entities" : include_entities
+    }
+    return access_api(url,params)
 
 """
 ユーザーidからツイートをとってくる
@@ -57,7 +86,7 @@ def get_tweet(id):
         "include_entities" : 1,
         "tweet_mode" : "extended"
     }
-    return get_tweets(url,params)
+    return access_api(url,params)
 
 """
 ユーザーのtweetリストをとってくる
@@ -71,7 +100,7 @@ def get_user_timeline(page,screen_name):
         "include_entities" : 1,
         "tweet_mode" : "extended"
     }
-    return get_tweets(url,params)
+    return access_api(url,params)
 
 
 """
@@ -86,7 +115,7 @@ def get_favorite_tweets(page,screen_name):
         "include_entities" : 1,
         "tweet_mode" : "extended"
     }
-    return get_tweets(url,params)
+    return access_api(url,params)
 
 
 
