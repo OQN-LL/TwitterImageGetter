@@ -1,0 +1,13 @@
+*.jpg
+*.png
+*.gif
+*.mp4
+*.json
+
+/images/*
+/videos/*
+
+/__pycache__/*
+
+TwitterToken.ini
+TestAPI.py
