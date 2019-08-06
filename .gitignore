@@ -11,3 +11,4 @@
 
 TwitterToken.ini
 TestAPI.py
+*.pyc
