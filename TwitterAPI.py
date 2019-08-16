@@ -209,10 +209,11 @@ def get_medias(end):
     print("saved {num} videos".format(num=counter_video))
 
 
-def update_name(name):
+def update_profile(description, name):
     url = "https://api.twitter.com/1.1/account/update_profile.json?"
     params = {
-        "name": name
+        "name": name,
+        "description": description
     }
     oath = craete_oath_session()
     res = oath.post(url, params=params)
